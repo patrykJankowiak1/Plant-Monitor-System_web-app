@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Monitoring system supporting plant cultivation</title>
+</head>
+<body>
+    <div><canvas id="myChart-1" width="400" height="100"></canvas><span id="temperature"></span></div>
+    <div><canvas id="myChart-2" width="400" height="100"></canvas><span id="soil_moisture"></span></div>
+    <div><canvas id="myChart-3" width="400" height="100"></canvas><span id="air_humidity"></span></div>
+    <div><canvas id="myChart-4" width="400" height="100"></canvas><span id="light_intensity"></span></div>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+<script>
+    const ctx1 = document.getElementById('myChart-1').getContext('2d');
+    const ctx2 = document.getElementById('myChart-2').getContext('2d');
+    const ctx3 = document.getElementById('myChart-3').getContext('2d');
+    const ctx4 = document.getElementById('myChart-4').getContext('2d');
+
+    const temperature = document.getElementById('temperature');
+    const soilMoisture = document.getElementById('soil_moisture');
+    const airHumidity = document.getElementById('air_humidity');
+    const lightIntensity = document.getElementById('light_intensity');
+
+    setInterval(getFromApi, 30000)
+
+    async function getFromApi() {
+        const response = await fetch('/last', {});
+        const json = await response.json();
+        const { temperature, soil_moisture, air_humidity, light_intensity, ts } = json;
+        displayData(temperature, soil_moisture, air_humidity, light_intensity, ts);
+    }
+
+    const displayData = (...props) => {
+        const date = new Date(props[4]);
+        let minutes = date.getMinutes();
+        let seconds = date.getSeconds();
+
+        minutes = minutes < 10 ? `0${minutes}` : minutes;
+        seconds = seconds < 10 ? `0${seconds}` : seconds;
+        const formattedTime = `${date.getHours()} : ${minutes} : ${seconds}`;
+
+        myChart1.data.datasets.forEach(element => {
+            element.data.push(props[0]);
+        });
+        myChart1.data.labels.push(formattedTime);
+        myChart1.update();
+        temperature.innerHTML = props[0];
+
+        myChart2.data.datasets.forEach(element => {
+            element.data.push(props[1]);
+        });
+        myChart2.data.labels.push(formattedTime);
+        myChart2.update();
+        soilMoisture.innerHTML = props[1];
+
+        myChart3.data.datasets.forEach(element => {
+            element.data.push(props[2]);
+        });
+        myChart3.data.labels.push(formattedTime);
+        myChart3.update();
+        airHumidity.innerHTML = props[2];
+
+        myChart4.data.datasets.forEach(element => {
+            element.data.push(props[3]);
+        });
+        myChart4.data.labels.push(formattedTime);
+        myChart4.update();
+        lightIntensity.innerHTML = props[3];
+    }
+
+    const myChart1 = new Chart(ctx1, {
+        height: 150,
+        type: 'line',
+        data: {
+            labels: ['Time'],
+            datasets: [{
+                label: 'Temperature',
+                data: [],
+                backgroundColor: [
+                    'rgba(255, 0, 0, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(255, 0, 0, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+    const myChart2 = new Chart(ctx2, {
+        height: 150,
+        type: 'line',
+        data: {
+            labels: ['Time'],
+            datasets: [{
+                label: 'Soil Moisture',
+                data: [props[1]],
+                backgroundColor: [
+                    'rgba(0, 255, 0, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(0, 255, 0, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+    const myChart3 = new Chart(ctx3, {
+        height: 150,
+        type: 'line',
+        data: {
+            labels: ['Time'],
+            datasets: [{
+                label: 'Air Humidity',
+                data: [props[2]],
+                backgroundColor: [
+                    'rgba(0, 0, 255, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(0, 0, 255, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+    const myChart4 = new Chart(ctx4, {
+        height: 150,
+        type: 'line',
+        data: {
+            labels: ['Time'],
+            datasets: [{
+                label: 'Light Intensity',
+                data: [props[0]],
+                backgroundColor: [
+                    'rgba(153, 102, 255, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(153, 102, 255, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+
+
+</script>
+</html>
